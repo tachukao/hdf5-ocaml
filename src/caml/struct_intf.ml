@@ -12,7 +12,6 @@ module type S_no_ppx = sig
   type t
 
   val create : unit -> t
-
   val pos : t -> int
   val has_next : t -> bool
   val has_prev : t -> bool
@@ -28,12 +27,11 @@ module type S_no_ppx = sig
     val get : t -> int -> e
     val iter : t -> f:(e -> unit) -> unit
     val iteri : t -> f:(int -> e -> unit) -> unit
-
     val data : t -> (char, int8_unsigned_elt, c_layout) Array1.t
 
     (** Creates and writes a table. *)
-    val make_table : t -> ?title:string -> ?chunk_size:int -> ?compress:bool -> H5.t
-      -> string -> unit
+    val make_table :
+      t -> ?title:string -> ?chunk_size:int -> ?compress:bool -> H5.t -> string -> unit
 
     (** Adds records to the end of the table. *)
     val append_records : t -> H5.t -> string -> unit
