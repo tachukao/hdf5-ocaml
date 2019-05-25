@@ -1,7 +1,4 @@
 _build
-lib/ppx/ppx_h5struct.ml
-setup.data
-setup.log
 *.a
 *.byte
 *.cm*
@@ -10,3 +7,5 @@ setup.log
 *.o
 *.so
 *.swp
+*.install
+*.merlin

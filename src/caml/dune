@@ -1,0 +1,18 @@
+(library
+   (name hdf5_caml)
+   (public_name hdf5-caml)
+   (libraries bigarray hdf5-raw)
+)
+
+(rule
+ (targets h5.ml)
+ (deps    (:first-dep h5.cppo.ml))
+ (action  (run %{bin:cppo} %{first-dep} -o %{targets}))
+ ) 
+
+(rule
+ (targets struct.ml)
+ (deps    (:first-dep struct.cppo.ml))
+ (action  (run %{bin:cppo} %{first-dep} -o %{targets}))
+ ) 
+

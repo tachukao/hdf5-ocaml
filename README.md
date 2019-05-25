@@ -6,8 +6,9 @@ OCaml arrays of records.  See examples/bench/bench_struct.ml`.
 
 # Building
 
-    ./configure
-    make
+```sh
+make install
+```
 
 # lib/caml - simplified HDF5 wrapper
 
