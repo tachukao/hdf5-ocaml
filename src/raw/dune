@@ -29,8 +29,3 @@
    (deps    (:discover config/discover.exe))
    (action  (run %{discover})))
 
-(rule
- (targets h5_raw.ml)
- (deps    (:first-dep h5_raw.cppo.ml))
- (action  (run %{bin:cppo} %{first-dep} -o %{targets}))
- )
