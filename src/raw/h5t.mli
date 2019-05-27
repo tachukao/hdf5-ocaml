@@ -1,120 +1,120 @@
 module Class : sig
   type t =
-  | NO_CLASS
-  | INTEGER
-  | FLOAT
-  | TIME
-  | STRING
-  | BITFIELD
-  | OPAQUE
-  | COMPOUND
-  | REFERENCE
-  | ENUM
-  | VLEN
-  | ARRAY
-  | NCLASSES
+    | NO_CLASS
+    | INTEGER
+    | FLOAT
+    | TIME
+    | STRING
+    | BITFIELD
+    | OPAQUE
+    | COMPOUND
+    | REFERENCE
+    | ENUM
+    | VLEN
+    | ARRAY
+    | NCLASSES
 end
 
 module Order : sig
   type t =
-  | ERROR
-  | LE
-  | BE
-  | VAX
-  | NONE
+    | ERROR
+    | LE
+    | BE
+    | VAX
+    | NONE
 end
 
 module Sign : sig
   type t =
-  | NONE
-  | SIGN_2
-  | NSGN
+    | NONE
+    | SIGN_2
+    | NSGN
 end
 
 module Norm : sig
   type t =
-  | IMPLIED
-  | MSBSET
-  | NONE
+    | IMPLIED
+    | MSBSET
+    | NONE
 end
 
 module Cset : sig
   type t =
-  | ASCII
-  | UTF8
+    | ASCII
+    | UTF8
 end
 
 module Str : sig
   type t =
-  | NULLTERM
-  | NULLPAD
-  | SPACEPAD
+    | NULLTERM
+    | NULLPAD
+    | SPACEPAD
 end
 
 module Pad : sig
   type t =
-  | ZERO
-  | ONE
-  | BACKGROUND
-  | NPAD
+    | ZERO
+    | ONE
+    | BACKGROUND
+    | NPAD
 end
 
 module Cmd : sig
   type t =
-  | INIT
-  | CONV
-  | FREE
+    | INIT
+    | CONV
+    | FREE
 end
 
 module Bkg : sig
   type t =
-  | NO
-  | TEMP
-  | YES
+    | NO
+    | TEMP
+    | YES
 end
 
 module Cdata : sig
-  type t = {
-    command  : Cmd.t;
-    need_bkg : Bkg.t;
-    recalc   : bool;
-    priv     : int64 }
+  type t =
+    { command : Cmd.t
+    ; need_bkg : Bkg.t
+    ; recalc : bool
+    ; priv : int64
+    }
 end
 
 module Pers : sig
   type t =
-  | DONTCARE
-  | HARD
-  | SOFT
+    | DONTCARE
+    | HARD
+    | SOFT
 end
 
 module Direction : sig
   type t =
-  | DEFAULT
-  | ASCEND
-  | DESCEND
+    | DEFAULT
+    | ASCEND
+    | DESCEND
 end
 
 module Conv_except : sig
   type t =
-  | RANGE_HI
-  | RANGE_LOW
-  | PRECISION
-  | TRUNCATE
-  | PINF
-  | NINF
-  | NAN
+    | RANGE_HI
+    | RANGE_LOW
+    | PRECISION
+    | TRUNCATE
+    | PINF
+    | NINF
+    | NAN
 end
 
 module Conv_ret : sig
   type t =
-  | ABORT
-  | UNHANDLED
-  | HANDLED
+    | ABORT
+    | UNHANDLED
+    | HANDLED
 end
 
 val variable : int
-
 val ieee_f32be : Hid.t
 val ieee_f32le : Hid.t
 val ieee_f64be : Hid.t
@@ -223,7 +223,7 @@ val native_int8 : Hid.t
 val native_uint8 : Hid.t
 val native_int_least8 : Hid.t
 val native_uint_least8 : Hid.t
-val native_int_fast8  : Hid.t
+val native_int_fast8 : Hid.t
 val native_uint_fast8 : Hid.t
 val native_int16 : Hid.t
 val native_uint16 : Hid.t
@@ -240,16 +240,23 @@ val native_uint_fast32 : Hid.t
 val native_int64 : Hid.t
 val native_uint64 : Hid.t
 val native_int_least64 : Hid.t
-val native_uint_least64  : Hid.t
+val native_uint_least64 : Hid.t
 val native_int_fast64 : Hid.t
 val native_uint_fast64 : Hid.t
-
 external to_loc : Hid.t -> Hid.t = "%identity"
 external of_loc : Hid.t -> Hid.t = "%identity"
-
 external create : Class.t -> int -> Hid.t = "hdf5_h5t_create"
-external commit : Hid.t -> string -> ?lcpl:Hid.t -> ?tcpl:Hid.t -> ?tapl:Hid.t -> Hid.t
-  -> unit = "hdf5_h5t_commit_bytecode" "hdf5_h5t_commit"
+
+external commit
+  :  Hid.t
+  -> string
+  -> ?lcpl:Hid.t
+  -> ?tcpl:Hid.t
+  -> ?tapl:Hid.t
+  -> Hid.t
+  -> unit
+  = "hdf5_h5t_commit_bytecode" "hdf5_h5t_commit"
+
 external copy : Hid.t -> Hid.t = "hdf5_h5t_copy"
 external equal : Hid.t -> Hid.t -> bool = "hdf5_h5t_equal"
 external get_class : Hid.t -> Class.t = "hdf5_h5t_get_class"

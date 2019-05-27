@@ -38,12 +38,14 @@ module Info = struct
   module Sohm = struct
     type t =
       { hdr_size : Hsize.t
-      ; msgs_info : H5_raw.Ih_info.t }
+      ; msgs_info : H5_raw.Ih_info.t
+      }
   end
 
   type t =
     { super_ext_size : Hsize.t
-    ; sohm : Sohm.t }
+    ; sohm : Sohm.t
+    }
 end
 
 module Mem = struct
@@ -64,7 +66,14 @@ module Libver = struct
     | LATEST
 end
 
-external create : string -> ?fcpl:Hid.t -> ?fapl:Hid.t -> Acc.t list -> Hid.t = "hdf5_h5f_create"
+external create
+  :  string
+  -> ?fcpl:Hid.t
+  -> ?fapl:Hid.t
+  -> Acc.t list
+  -> Hid.t
+  = "hdf5_h5f_create"
+
 external open_ : string -> ?fapl:Hid.t -> Acc.t list -> Hid.t = "hdf5_h5f_open"
 external close : Hid.t -> unit = "hdf5_h5f_close"
 external flush : Hid.t -> Scope.t -> unit = "hdf5_h5f_flush"

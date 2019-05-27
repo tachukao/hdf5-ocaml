@@ -12,61 +12,85 @@ module type S = sig
       @param data If provided, the storage for the data. *)
   val read_float_array : t -> ?data:float array -> string -> float array
 
-  val write_float_genarray :
-    t -> string -> ?deflate:int -> (float, float_elt, _) Genarray.t -> unit
+  val write_float_genarray
+    :  t
+    -> string
+    -> ?deflate:int
+    -> (float, float_elt, _) Genarray.t
+    -> unit
 
   (** Reads the data set into a float Genarray.t.
 
       @param data If provided, the storage for the data. *)
-  val read_float_genarray :
-       t
+  val read_float_genarray
+    :  t
     -> ?data:(float, float_elt, 'a) Genarray.t
     -> string
     -> 'a layout
     -> (float, float_elt, 'a) Genarray.t
 
   (** Writes the given float Array1.t to the data set. *)
-  val write_float_array1 : t -> string -> ?deflate:int -> (float, float_elt, _) Array1.t -> unit
+  val write_float_array1
+    :  t
+    -> string
+    -> ?deflate:int
+    -> (float, float_elt, _) Array1.t
+    -> unit
 
   (** Reads the data set into a float Array1.t.
 
       @param data If provided, the storage for the data. *)
-  val read_float_array1 :
-       t
+  val read_float_array1
+    :  t
     -> ?data:(float, float_elt, 'a) Array1.t
     -> string
     -> 'a layout
     -> (float, float_elt, 'a) Array1.t
 
   (** Writes the given float Array1.t to the data set. *)
-  val write_float_array2 : t -> string -> ?deflate:int -> (float, float_elt, _) Array2.t -> unit
+  val write_float_array2
+    :  t
+    -> string
+    -> ?deflate:int
+    -> (float, float_elt, _) Array2.t
+    -> unit
 
   (** Reads the data set into a float Array2.t.
 
       @param data If provided, the storage for the data. *)
-  val read_float_array2 :
-       t
+  val read_float_array2
+    :  t
     -> ?data:(float, float_elt, 'a) Array2.t
     -> string
     -> 'a layout
     -> (float, float_elt, 'a) Array2.t
 
   (** Writes the given float Array1.t to the data set. *)
-  val write_float_array3 : t -> string -> ?deflate:int -> (float, float_elt, _) Array3.t -> unit
+  val write_float_array3
+    :  t
+    -> string
+    -> ?deflate:int
+    -> (float, float_elt, _) Array3.t
+    -> unit
 
   (** Reads the data set into a float Array3.t.
 
       @param data If provided, the storage for the data. *)
-  val read_float_array3 :
-       t
+  val read_float_array3
+    :  t
     -> ?data:(float, float_elt, 'a) Array3.t
     -> string
     -> 'a layout
     -> (float, float_elt, 'a) Array3.t
 
   (** Writes the given array of float arrays as a matrix. *)
-  val write_float_array_array :
-    t -> string -> ?transpose:bool -> ?deflate:int -> float array array -> unit
+  val write_float_array_array
+    :  t
+    -> string
+    -> ?transpose:bool
+    -> ?deflate:int
+    -> float array array
+    -> unit
 
   (** Reads the given matrix as an array of float arrays. *)
   val read_float_array_array : t -> ?transpose:bool -> string -> float array array

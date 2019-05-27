@@ -1,6 +1,4 @@
 (library
-   (name hdf5_caml)
-   (public_name hdf5-caml)
-   (libraries bigarray hdf5-raw)
-)
-
+ (name hdf5_caml)
+ (public_name hdf5-caml)
+ (libraries bigarray hdf5-raw))

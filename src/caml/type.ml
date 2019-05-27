@@ -4,4 +4,6 @@ type t =
   | Float64
   | String of int
 
-let size = function Int | Int64 | Float64 -> 8 | String l -> l
+let size = function
+  | Int | Int64 | Float64 -> 8
+  | String l -> l

@@ -3,7 +3,7 @@ open Hdf5_raw
 let _FILE = "chard.h5"
 
 let () =
-  let file_id = H5f.create _FILE H5f.Acc.([ TRUNC ]) in
+  let file_id = H5f.create _FILE H5f.Acc.[ TRUNC ] in
   let dataspace_id = H5s.create H5s.Class.SCALAR in
   let dtype = H5t.copy H5t.c_s1 in
   H5t.set_size dtype 16;

@@ -8,29 +8,30 @@ end
 
 module Iter_order : sig
   type t =
-  | INC
-  | DEC
-  | NATIVE
-  | N
+    | INC
+    | DEC
+    | NATIVE
+    | N
 end
 
 module Iter : sig
   type t =
-  | CONT
-  | STOP
+    | CONT
+    | STOP
 end
 
 module Index : sig
   type t =
-  | NAME
-  | CRT_ORDER
-  | N
+    | NAME
+    | CRT_ORDER
+    | N
 end
 
 module Ih_info : sig
-  type t = {
-    index_size : int;
-    heap_size  : int }
+  type t =
+    { index_size : int
+    ; heap_size : int
+    }
 end
 
 val init : unit -> unit

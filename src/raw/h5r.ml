@@ -38,9 +38,11 @@ module Hobj_ref = struct
       string_set64u x 0 (bigstring_get64u t (i + 0));
       x
 
+
     let unsafe_set (t : t) i (x : hobj_ref) =
       let i = i * 8 in
       bigstring_set64u t (i + 0) (string_get64u x 0)
+
 
     let to_genarray t = genarray_of_array1 t
   end
@@ -66,10 +68,12 @@ module Hdset_reg_ref = struct
       string_set32u x 8 (bigstring_get32u t (i + 8));
       x
 
+
     let unsafe_set (t : t) i (x : hdset_reg_ref) =
       let i = i * 12 in
       bigstring_set64u t (i + 0) (string_get64u x 0);
       bigstring_set32u t (i + 8) (string_get32u x 8)
+
 
     let to_genarray t = genarray_of_array1 t
   end

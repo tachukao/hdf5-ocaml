@@ -78,7 +78,8 @@ module Cdata = struct
     { command : Cmd.t
     ; need_bkg : Bkg.t
     ; recalc : bool
-    ; priv : int64 }
+    ; priv : int64
+    }
 end
 
 module Pers = struct
@@ -117,8 +118,8 @@ external get_variable : unit -> int = "hdf5_h5t_get_variable"
 
 let variable = get_variable ()
 
-external datatypes :
-     unit
+external datatypes
+  :  unit
   -> Hid.t
      * Hid.t
      * Hid.t
@@ -376,15 +377,23 @@ let ( ieee_f32be
     , native_int_least64
     , native_uint_least64
     , native_int_fast64
-    , native_uint_fast64 ) =
+    , native_uint_fast64 )
+  =
   datatypes ()
+
 
 external to_loc : Hid.t -> Hid.t = "%identity"
 external of_loc : Hid.t -> Hid.t = "%identity"
 external create : Class.t -> int -> Hid.t = "hdf5_h5t_create"
 
-external commit :
-  Hid.t -> string -> ?lcpl:Hid.t -> ?tcpl:Hid.t -> ?tapl:Hid.t -> Hid.t -> unit
+external commit
+  :  Hid.t
+  -> string
+  -> ?lcpl:Hid.t
+  -> ?tcpl:Hid.t
+  -> ?tapl:Hid.t
+  -> Hid.t
+  -> unit
   = "hdf5_h5t_commit_bytecode" "hdf5_h5t_commit"
 
 external copy : Hid.t -> Hid.t = "hdf5_h5t_copy"

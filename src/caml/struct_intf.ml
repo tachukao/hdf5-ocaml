@@ -30,8 +30,14 @@ module type S_no_ppx = sig
     val data : t -> (char, int8_unsigned_elt, c_layout) Array1.t
 
     (** Creates and writes a table. *)
-    val make_table :
-      t -> ?title:string -> ?chunk_size:int -> ?compress:bool -> H5.t -> string -> unit
+    val make_table
+      :  t
+      -> ?title:string
+      -> ?chunk_size:int
+      -> ?compress:bool
+      -> H5.t
+      -> string
+      -> unit
 
     (** Adds records to the end of the table. *)
     val append_records : t -> H5.t -> string -> unit

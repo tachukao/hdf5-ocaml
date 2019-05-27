@@ -1,10 +1,10 @@
 open Bigarray
 open Hdf5_raw
 
-let _FILE        = "SDS.h5"
+let _FILE = "SDS.h5"
 let _DATASETNAME = "IntArray"
-let _NX          = 5
-let _NY          = 6
+let _NX = 5
+let _NY = 6
 
 let () =
   let data = Array2.create int32 c_layout _NX _NY in

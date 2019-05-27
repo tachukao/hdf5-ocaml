@@ -16,11 +16,14 @@ module Ext = struct
   let bsub (t : t) i : t = Obj.magic (Obj.magic t - i)
 
   (* [get_float64 t boffset] returns a float stored [2 * boffset] bytes from [t]. *)
-  let get_float64 (t : t) boffset = Array.unsafe_get (Obj.magic (badd t boffset) : float array) 0
+  let get_float64 (t : t) boffset =
+    Array.unsafe_get (Obj.magic (badd t boffset) : float array) 0
+
 
   (* [set_float64 t boffset v] sets a float [2 * boffset] bytes from [t]. *)
   let set_float64 (t : t) boffset v =
     Array.unsafe_set (Obj.magic (badd t boffset) : float array) 0 v
+
 
   external caml_string_get_64 : t -> int -> int64 = "%caml_string_get64u"
   external caml_string_set_64 : t -> int -> int64 -> unit = "%caml_string_set64u"
@@ -52,6 +55,7 @@ module Ext = struct
     Bytes.unsafe_blit (Obj.magic t) 0 s 0 len;
     Bytes.unsafe_to_string s
 
+
   (* [set_string t boffset v] sets a string [2 * boffset] bytes from [t]. *)
   let set_string (t : t) pos len v =
     let t = badd t pos in
@@ -59,6 +63,7 @@ module Ext = struct
     let mlen = if len < vlen then len else vlen in
     Bytes.unsafe_blit (Bytes.unsafe_of_string v) 0 (Obj.magic t) 0 mlen;
     Bytes.unsafe_fill (Obj.magic t) mlen (len - mlen) '\000'
+
 
   (* Compares pointers as addresses in memory. *)
   let ( < ) (t : t) (t' : t) = (Obj.magic t : int) < (Obj.magic t' : int)
@@ -77,7 +82,8 @@ module Mem = struct
       ; num_dims : int
       ; flags : int
       ; proxy : Ext.t
-      ; bdim : int }
+      ; bdim : int
+      }
   end
 
   let create len = Array1.create Char C_layout len
@@ -99,7 +105,8 @@ module Ptr = struct
     ; (* The length of the array or [-1] if not initialized. *)
       mutable len : int
     ; (* The index of the element of the array pointed by [ptr]. *)
-      mutable pos : int }
+      mutable pos : int
+    }
 
   (* [unsafe_next t bsize] moves the pointer to the next element of the array provided
      that the length of the struct is [2 * bsize] bytes. *)
@@ -107,17 +114,20 @@ module Ptr = struct
     t.ptr <- Ext.badd t.ptr bsize;
     t.pos <- t.pos + 1
 
-  (* [unsafe_prev t bsize] moves the pointer to the previous element of the array provided
-     that the length of the struct is [2 * bsize] bytes. *)
+
+  (* [unsafe_prev t bsize] moves the pointer to the previous element of the array
+     provided that the length of the struct is [2 * bsize] bytes. *)
   let unsafe_prev t bsize =
     t.ptr <- Ext.bsub t.ptr bsize;
     t.pos <- t.pos - 1
+
 
   (* [unsafe_move t pos bsize] moves the pointer to the [pos]-th element of the array
      provided that the length of the struct is [2 * bsize] bytes. *)
   let unsafe_move t pos bsize =
     t.ptr <- Ext.badd t.begin_ (pos * bsize);
     t.pos <- pos
+
 
   (* Like [unsafe_next] but raises exception if the pointer is out of bounds. *)
   let next t bsize =
@@ -126,7 +136,8 @@ module Ptr = struct
     then raise (Invalid_argument "index out of bounds")
     else (
       t.ptr <- ptr;
-      t.pos <- t.pos + 1 )
+      t.pos <- t.pos + 1)
+
 
   (* Like [unsafe_prev] but raises exception if the pointer is out of bounds. *)
   let prev t bsize =
@@ -135,7 +146,8 @@ module Ptr = struct
     then raise (Invalid_argument "index out of bounds")
     else (
       t.ptr <- ptr;
-      t.pos <- t.pos - 1 )
+      t.pos <- t.pos - 1)
+
 
   (* Like [unsafe_move] but raises exception if the pointer is out of bounds. *)
   let move t pos bsize =
@@ -144,11 +156,13 @@ module Ptr = struct
     then raise (Invalid_argument "index out of bounds")
     else (
       t.ptr <- ptr;
-      t.pos <- pos )
+      t.pos <- pos)
+
 
   let get_len t bsize =
     if t.len < 0 then t.len <- Mem.bdim t.mem / bsize;
     t.len
+
 
   let get_float64 t bo = Ext.get_float64 t.ptr bo
   let set_float64 t bo v = Ext.set_float64 t.ptr bo v
@@ -172,9 +186,10 @@ module Ptr = struct
     let v' = Ext.get_float64 data (!max * bsize) in
     if v' <= v then !max else !min
 
-  (* [seek_float64 t bsize bfield v] seeks the last element of the array with the value of
-     the given field less or equal [v].  The field is [2 * bfield] bytes from the
-     beginning of the struct.  The length of the struct is [2 * bsize] bytes.  The array
+
+  (* [seek_float64 t bsize bfield v] seeks the last element of the array with the value
+     of the given field less or equal [v]. The field is [2 * bfield] bytes from the
+     beginning of the struct. The length of the struct is [2 * bsize] bytes. The array
      elements are sorted increasingly by the given field. *)
   let seek_float64 t bsize bfield v =
     let len = get_len t bsize in
@@ -190,18 +205,19 @@ module Ptr = struct
         max := !max + !step;
         step := !step * 2
       done;
-      if !max >= len then max := len - 1 )
+      if !max >= len then max := len - 1)
     else if v' > v
     then (
       while !min > 0 && Ext.get_float64 data (!min * bsize) > v do
         min := !min - !step;
         step := !step * 2
       done;
-      if !min < 0 then min := 0 );
+      if !min < 0 then min := 0);
     unsafe_move
       t
       (if !max > !min then seek_float64 t bsize bfield ~min:!min ~max:!max v else !max)
       bsize
+
 
   let seek_int t bsize bfield ~min ~max v =
     let mid = ref min in
@@ -216,9 +232,10 @@ module Ptr = struct
     let v' = Ext.get_int data (!mid * bsize) in
     if v' <= v then !max else !min
 
+
   (* [seek_int t bsize bfield v] seeks the last element of the array with the value of
-     the given field less or equal [v].  The field is [2 * bfield] bytes from the
-     beginning of the struct.  The length of the struct is [2 * bsize] bytes.  The array
+     the given field less or equal [v]. The field is [2 * bfield] bytes from the
+     beginning of the struct. The length of the struct is [2 * bsize] bytes. The array
      elements are sorted increasingly by the given field. *)
   let seek_int t bsize bfield v =
     let len = get_len t bsize in
@@ -234,18 +251,19 @@ module Ptr = struct
         max := !max + !step;
         step := !step * 2
       done;
-      if !max >= len then max := len - 1 )
+      if !max >= len then max := len - 1)
     else if v' > v
     then (
       while !min > 0 && Ext.get_int data (!max * bsize) > v do
         min := !min - !step;
         step := !step * 2
       done;
-      if !min < 0 then min := 0 );
+      if !min < 0 then min := 0);
     unsafe_move
       t
       (if !max > !min then seek_int t bsize bfield ~min:!min ~max:!max v else !max)
       bsize
+
 
   let seek_int64 t bsize bfield ~min ~max (v : int64) =
     let mid = ref min in
@@ -260,9 +278,10 @@ module Ptr = struct
     let v' = Ext.get_int64 data (!max * bsize) in
     if v' <= v then !max else !min
 
+
   (* [seek_int64 t bsize bfield v] seeks the last element of the array with the value of
-     the given field less or equal [v].  The field is [2 * bfield] bytes from the
-     beginning of the struct.  The length of the struct is [2 * bsize] bytes.  The array
+     the given field less or equal [v]. The field is [2 * bfield] bytes from the
+     beginning of the struct. The length of the struct is [2 * bsize] bytes. The array
      elements are sorted increasingly by the given field. *)
   let seek_int64 t bsize bfield v =
     let len = get_len t bsize in
@@ -278,18 +297,19 @@ module Ptr = struct
         max := !max + !step;
         step := !step * 2
       done;
-      if !max >= len then max := len - 1 )
+      if !max >= len then max := len - 1)
     else if v' > v
     then (
       while !min > 0 && Ext.get_int64 data (!min * bsize) > v do
         min := !min - !step;
         step := !step * 2
       done;
-      if !min < 0 then min := 0 );
+      if !min < 0 then min := 0);
     unsafe_move
       t
       (if !max > !min then seek_int64 t bsize bfield ~min:!min ~max:!max v else !max)
       bsize
+
 
   let seek_string _t _bsize _bfield _len _v = failwith "[seek_string] not implemented"
 end
@@ -309,10 +329,15 @@ module Make (S : S) = struct
         memo := Some value;
         value
 
+
   let nfields = List.length S.fields
 
   let bsize =
-    List.fold_left (fun s field -> s + ((Type.size field.Field.type_ + 7) / 8 * 8 / 2)) 0 S.fields
+    List.fold_left
+      (fun s field -> s + ((Type.size field.Field.type_ + 7) / 8 * 8 / 2))
+      0
+      S.fields
+
 
   let size = 2 * bsize
   let field_names = List.map (fun field -> field.Field.name) S.fields |> Array.of_list
@@ -323,9 +348,10 @@ module Make (S : S) = struct
       (fun field ->
         let field_offset = !offset in
         offset := !offset + ((Type.size field.Field.type_ + 7) / 8 * 8);
-        field_offset )
+        field_offset)
       S.fields
     |> Array.of_list
+
 
   let field_types =
     memoize (fun () ->
@@ -337,11 +363,14 @@ module Make (S : S) = struct
             | Type.String l ->
               let type_ = H5t.copy H5t.c_s1 in
               H5t.set_size type_ l;
-              type_ )
+              type_)
           S.fields
-        |> Array.of_list )
+        |> Array.of_list)
 
-  let field_sizes = List.map (fun field -> Type.size field.Field.type_) S.fields |> Array.of_list
+
+  let field_sizes =
+    List.map (fun field -> Type.size field.Field.type_) S.fields |> Array.of_list
+
 
   let compound_type =
     memoize (fun () ->
@@ -350,7 +379,8 @@ module Make (S : S) = struct
         for i = 0 to nfields - 1 do
           H5t.insert datatype field_names.(i) field_offset.(i) field_types.(i)
         done;
-        datatype )
+        datatype)
+
 
   include Ptr
   open Bigarray
@@ -377,32 +407,45 @@ module Make (S : S) = struct
       ; begin_ = data
       ; end_ = Ext.badd data (Mem.bdim t)
       ; len = -1
-      ; pos }
+      ; pos
+      }
+
 
     let init len f =
       if len < 0 then invalid_arg "Hdf5_caml.Struct.Array.init";
       let t = make len in
       if len = 0
       then t
-      else
+      else (
         let e = unsafe_get t 0 in
         for i = 0 to len - 2 do
           f i e;
           unsafe_next e
         done;
         f (len - 1) e;
-        t
+        t)
+
 
     let get t pos =
       let data = Mem.data t in
       let ptr = Ext.badd data (pos * bsize) in
       let end_ = Ext.badd data (Mem.bdim t) in
-      if pos < 0 || Ext.( >= ) ptr end_ then raise (Invalid_argument "index out of bounds");
-      {ptr; mem = t; begin_ = data; end_; len = -1; pos}
+      if pos < 0 || Ext.( >= ) ptr end_
+      then raise (Invalid_argument "index out of bounds");
+      { ptr; mem = t; begin_ = data; end_; len = -1; pos }
+
 
     let make_table t ?title ?chunk_size ?(compress = true) h5 dset_name =
-      let title = match title with Some t -> t | None -> dset_name in
-      let chunk_size = match chunk_size with Some s -> s | None -> length t in
+      let title =
+        match title with
+        | Some t -> t
+        | None -> dset_name
+      in
+      let chunk_size =
+        match chunk_size with
+        | Some s -> s
+        | None -> length t
+      in
       H5tb.make_table
         title
         (H5.hid h5)
@@ -416,6 +459,7 @@ module Make (S : S) = struct
         ~compress
         (genarray_of_array1 t)
 
+
     let append_records t h5 dset_name =
       H5tb.append_records
         (H5.hid h5)
@@ -425,6 +469,7 @@ module Make (S : S) = struct
         ~field_offset
         ~field_sizes
         (genarray_of_array1 t)
+
 
     let write_records t h5 ~start dset_name =
       H5tb.write_records
@@ -436,6 +481,7 @@ module Make (S : S) = struct
         ~field_offset
         ~field_sizes
         (genarray_of_array1 t)
+
 
     let read_table h5 table_name =
       let table_name = H5.escape table_name in
@@ -451,6 +497,7 @@ module Make (S : S) = struct
         (genarray_of_array1 t);
       t
 
+
     let read_records h5 ~start ~nrecords table_name =
       let loc = H5.hid h5 in
       let t = make nrecords in
@@ -465,9 +512,10 @@ module Make (S : S) = struct
         (genarray_of_array1 t);
       t
 
+
     let write t ?(deflate = H5.default_deflate ()) h5 name =
       let len = length t in
-      let dims = [|len|] in
+      let dims = [| len |] in
       let dataspace = H5s.create_simple dims in
       let dcpl =
         match deflate with
@@ -479,11 +527,16 @@ module Make (S : S) = struct
           Some dcpl
       in
       let compound_type = compound_type () in
-      let dataset = H5d.create (H5.hid h5) (H5.escape name) compound_type ?dcpl dataspace in
+      let dataset =
+        H5d.create (H5.hid h5) (H5.escape name) compound_type ?dcpl dataspace
+      in
       H5d.write_bigarray dataset compound_type H5s.all H5s.all (genarray_of_array1 t);
       H5d.close dataset;
       H5s.close dataspace;
-      match dcpl with None -> () | Some dcpl -> H5p.close dcpl
+      match dcpl with
+      | None -> ()
+      | Some dcpl -> H5p.close dcpl
+
 
     let read h5 ?data name =
       let hid = H5.hid h5 in
@@ -497,7 +550,8 @@ module Make (S : S) = struct
       let data =
         match data with
         | Some data ->
-          if length data < dims.(0) then invalid_arg "The provided data storage too small";
+          if length data < dims.(0)
+          then invalid_arg "The provided data storage too small";
           data
         | None -> make dims.(0)
       in
@@ -507,12 +561,14 @@ module Make (S : S) = struct
       H5d.close dataset;
       data
 
+
     let iter t ~f =
       let e = unsafe_get t 0 in
       for _ = 0 to length t - 1 do
         f e;
         unsafe_next e
       done
+
 
     let iteri t ~f =
       let e = unsafe_get t 0 in
@@ -535,7 +591,8 @@ module Make (S : S) = struct
       ; mutable length : int
       ; mutable end_ : e
       ; mutable ptrs : e list
-      ; mutable on_realloc : t -> unit }
+      ; mutable on_realloc : t -> unit
+      }
 
     let create ?(capacity = 16) ?(growth_factor = 1.5) () =
       if growth_factor < 1.
@@ -547,7 +604,9 @@ module Make (S : S) = struct
       ; length = 0
       ; end_ = Array.unsafe_get mem (-1)
       ; ptrs = []
-      ; on_realloc = (fun _ -> ()) }
+      ; on_realloc = (fun _ -> ())
+      }
+
 
     let capacity t = t.capacity
     let growth_factor t = t.growth_factor
@@ -558,12 +617,12 @@ module Make (S : S) = struct
       then (
         let mem = Array.make capacity in
         Array1.blit (Array1.sub t.mem 0 (Array1.dim mem)) mem;
-        t.mem <- mem )
+        t.mem <- mem)
       else if t.capacity < capacity
       then (
         let mem = Array.make capacity in
         Array1.blit t.mem (Array1.sub mem 0 (Array1.dim t.mem));
-        t.mem <- mem );
+        t.mem <- mem);
       List.iter
         (fun ptr ->
           let ptr' = t.mem.(ptr.pos) in
@@ -572,16 +631,18 @@ module Make (S : S) = struct
           ptr.begin_ <- ptr'.begin_;
           ptr.end_ <- ptr'.end_;
           ptr.len <- ptr'.len;
-          ptr.pos <- ptr'.pos )
+          ptr.pos <- ptr'.pos)
         t.ptrs;
       t.end_ <- Array.unsafe_get t.mem (t.length - 1);
       t.capacity <- capacity;
       t.on_realloc t
 
+
     let set_length t length =
       t.length <- length;
       List.iter (fun ptr -> ptr.len <- length) t.ptrs;
-      (t.end_).len <- length
+      t.end_.len <- length
+
 
     let append t =
       if t.capacity = t.length
@@ -590,9 +651,11 @@ module Make (S : S) = struct
       next t.end_;
       t.end_
 
+
     let clear t =
       set_length t 0;
       unsafe_move t.end_ (-1)
+
 
     let unsafe_get t i =
       let e = Array.unsafe_get t.mem i in
@@ -600,11 +663,13 @@ module Make (S : S) = struct
       t.ptrs <- e :: t.ptrs;
       e
 
+
     let get t i =
       let e = t.mem.(i) in
       e.len <- t.length;
       t.ptrs <- e :: t.ptrs;
       e
+
 
     let iter t ~f =
       let ptr = t.end_ in
@@ -615,6 +680,7 @@ module Make (S : S) = struct
       done;
       unsafe_move ptr (t.length - 1)
 
+
     let iteri t ~f =
       let ptr = t.end_ in
       unsafe_move ptr 0;
@@ -623,6 +689,7 @@ module Make (S : S) = struct
         unsafe_next ptr
       done;
       unsafe_move ptr (t.length - 1)
+
 
     let of_array ?(growth_factor = 1.5) a =
       if growth_factor < 1.
@@ -634,12 +701,15 @@ module Make (S : S) = struct
       ; length = len
       ; end_ = a.(len - 1)
       ; ptrs = []
-      ; on_realloc = (fun _ -> ()) }
+      ; on_realloc = (fun _ -> ())
+      }
+
 
     let to_array t =
       let mem = Array.make t.length in
       Array1.blit (Array1.sub t.mem 0 (Array1.dim mem)) mem;
       mem
+
 
     let on_realloc t f = t.on_realloc <- f
   end
@@ -651,13 +721,16 @@ module Make (S : S) = struct
       { mutable a : Array.t
       ; mutable hd : e
       ; mutable tl : e
-      ; mutable peek : e }
+      ; mutable peek : e
+      }
 
     let create ?(capacity = 16) () =
       if capacity <= 0
-      then invalid_arg (Printf.sprintf "The given capacity %d cannot be negative" capacity);
+      then
+        invalid_arg (Printf.sprintf "The given capacity %d cannot be negative" capacity);
       let a = Array.make capacity in
-      {a; hd = a.(0); tl = a.(0); peek = a.(0)}
+      { a; hd = a.(0); tl = a.(0); peek = a.(0) }
+
 
     let next a e =
       let capacity = Array.length a in
@@ -665,18 +738,20 @@ module Make (S : S) = struct
       let new_pos = pos + 1 in
       if new_pos = capacity then unsafe_move e 0 else unsafe_next e
 
+
     let is_empty t = pos t.hd = pos t.tl
 
     let length t =
       let l = pos t.hd - pos t.tl in
       if l >= 0 then l else l + Array.length t.a
 
+
     let add t =
-      let {a; hd; tl; _} = t in
+      let { a; hd; tl; _ } = t in
       next a hd;
       if pos hd <> pos tl
       then hd
-      else
+      else (
         let capacity = Array.length a in
         let new_capacity = 1 + (capacity * 3 / 2) in
         t.a <- Array.make new_capacity;
@@ -694,16 +769,20 @@ module Make (S : S) = struct
           Bigarray.Array1.blit
             (Array1.sub a bpos (bcapacity - bpos))
             (Array1.sub t.a 0 (bcapacity - bpos));
-          Bigarray.Array1.blit (Array1.sub a 0 bpos) (Array1.sub t.a (bcapacity - bpos) bpos) );
+          Bigarray.Array1.blit
+            (Array1.sub a 0 bpos)
+            (Array1.sub t.a (bcapacity - bpos) bpos));
         unsafe_move t.hd capacity;
-        t.hd
+        t.hd)
 
-    let take {a; hd; tl; _} =
+
+    let take { a; hd; tl; _ } =
       if pos hd = pos tl then raise Queue.Empty;
       next a tl;
       tl
 
-    let peek {a; hd; tl; peek} =
+
+    let peek { a; hd; tl; peek } =
       if pos hd = pos tl then raise Queue.Empty;
       unsafe_move peek (pos tl);
       next a peek;

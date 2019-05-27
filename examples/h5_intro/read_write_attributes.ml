@@ -1,11 +1,11 @@
 open Bigarray
 open Hdf5_raw
 
-let _FILE   = "Attributes.h5"
-let _SIZE   = 7
-let _ADIM1  = 2
-let _ADIM2  = 3
-let _ANAME  = "Float attribute"
+let _FILE = "Attributes.h5"
+let _SIZE = 7
+let _ADIM1 = 2
+let _ADIM2 = 3
+let _ANAME = "Float attribute"
 let _ANAMES = "Character attribute"
 
 let array1_to_string (a : (char, int8_unsigned_elt, c_layout) Array1.t) =
@@ -16,26 +16,26 @@ let array1_to_string (a : (char, int8_unsigned_elt, c_layout) Array1.t) =
   done;
   s
 
+
 let attr_info loc_id name _ () =
   let attr = H5a.open_name loc_id name in
   Printf.printf "\n";
   Printf.printf "Name : ";
   print_endline name;
-
   let atype = H5a.get_type attr in
   let aspace = H5a.get_space attr in
   let sdim, _ = H5s.get_simple_extent_dims aspace in
   let rank = Array.length sdim in
-  if rank > 0 then begin
+  if rank > 0
+  then (
     Printf.printf "Rank : %d \n" rank;
     Printf.printf "Dimension sizes : ";
     for i = 0 to rank - 1 do
       Printf.printf "%d " sdim.(i)
     done;
-    Printf.printf "\n"
-  end;
-
-  if H5t.Class.FLOAT = H5t.get_class atype then begin
+    Printf.printf "\n");
+  if H5t.Class.FLOAT = H5t.get_class atype
+  then (
     Printf.printf "Type : FLOAT \n";
     let npoints = H5s.get_simple_extent_npoints aspace in
     let float_array = Array1.create float32 c_layout npoints in
@@ -44,13 +44,12 @@ let attr_info loc_id name _ () =
     for i = 0 to npoints - 1 do
       Printf.printf "%f " float_array.{i}
     done;
-    Printf.printf "\n"
-  end;
-
+    Printf.printf "\n");
   H5t.close atype;
   H5s.close aspace;
   H5a.close attr;
   H5_raw.Iter.CONT
+
 
 let () =
   let matrix = Array2.create float32 c_layout _ADIM1 _ADIM2 in
@@ -59,14 +58,12 @@ let () =
   let vector = Array1.of_array int32 c_layout [| 1l; 2l; 3l; 4l; 5l; 6l; 7l |] in
   let point = Array1.of_array int32 c_layout [| 1l |] in
   let string_ = Array1.of_array char c_layout [| 'A'; 'B'; 'C'; 'D' |] in
-  
   for i = 0 to _ADIM1 - 1 do
     for j = 0 to _ADIM2 - 1 do
       matrix.{i, j} <- -1.
     done
   done;
-
-  let file = H5f.create _FILE H5f.Acc.([ TRUNC ]) in
+  let file = H5f.create _FILE H5f.Acc.[ TRUNC ] in
   let fid = H5s.create H5s.Class.SIMPLE in
   H5s.set_extent_simple fid [| _SIZE |];
   let dataset = H5d.create file "Dataset" H5t.native_int fid in
@@ -92,24 +89,23 @@ let () =
   H5a.close attr3;
   H5d.close dataset;
   H5f.close file;
-
-  let file = H5f.open_ _FILE H5f.Acc.([ RDONLY ]) in
+  let file = H5f.open_ _FILE H5f.Acc.[ RDONLY ] in
   let dataset = H5d.open_ file "Dataset" in
   let attr = H5a.open_name dataset "Integer attribute" in
   H5a.read_bigarray attr H5t.native_int (genarray_of_array1 point_out);
-  Printf.printf "The value of the attribute \"Integer attribute\" is %ld \n"
+  Printf.printf
+    "The value of the attribute \"Integer attribute\" is %ld \n"
     point_out.{0};
   H5a.close attr;
-
   let attr = H5a.open_idx dataset 2 in
   let atype = H5t.copy H5t.c_s1 in
   H5t.set_size atype 4;
   H5a.read_bigarray attr atype (genarray_of_array1 string_out);
-  Printf.printf "The value of the attribute with the index 2 is %s \n"
+  Printf.printf
+    "The value of the attribute with the index 2 is %s \n"
     (array1_to_string string_out);
   H5a.close attr;
   H5t.close atype;
-
   let _ = H5a.iterate dataset attr_info () in
   H5d.close dataset;
   H5f.close file
